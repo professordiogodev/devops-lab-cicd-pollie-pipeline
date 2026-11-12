@@ -2,11 +2,20 @@
 
 ## The situation
 
-Last Thursday afternoon a teammate merged a small change into `main`. It passed the code review, because the diff looked fine. It broke the vote worker in production for two hours, and a unit test, which nobody ran, would have caught it in three seconds.
+```text
+BLAMELESS POSTMORTEM - "Two hours without votes"
+Trigger    : a teammate merged a small change into main last Thursday
+Why merged : the code review passed, because the diff looked fine
+Impact     : the vote worker was broken in production for two hours
+Detection  : by a user
+Gap        : a unit test would have caught it in three seconds. Nobody ran it.
+Lead said  : "I do not want to rely on people remembering to run the tests."
+Action     : build a pipeline so a change that breaks Pollie, or ships a
+             known-vulnerable library, cannot reach main. What reaches main
+             is exactly the image that passed the checks.
+```
 
-Your lead is direct: *"I do not want to rely on people remembering to run the tests. Build a pipeline so a change that breaks Pollie, or ships a known-vulnerable library, cannot reach `main`. And when something does reach `main`, the exact image that passed the checks is what gets published."*
-
-You have Pollie's source code in this repository, a working `Dockerfile` and GitHub Actions. You do not have a pipeline yet.
+You have Pollie's source code in this repository, a working `Dockerfile` and GitHub Actions. You do not have a pipeline yet. This is a long build: lint, test with real services, build once, scan, publish only from `main`, break it on purpose and use what you published.
 
 > **Your mission**
 > - Write `.github/workflows/ci.yml` with five jobs: **lint**, **test** (against real PostgreSQL and Redis), **build**, **scan** and **publish**
